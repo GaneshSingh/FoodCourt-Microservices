@@ -1,0 +1,58 @@
+services:
+  # Robot 1: The Inventory
+  item-service:
+    image: item-service
+    build:
+      context: ./ItemService
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"  # Outside 5001 -> Inside 8080
+    container_name: item-api
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=FoodCourtDb;User Id=sa;Password=MySuperStrongPassword123!;TrustServerCertificate=True;
+      - RedisUrl=redis:6379
+    depends_on:
+      - sql-server
+      - redis
+
+  # Robot 2: The Cashier
+  order-service:
+    image: order-service
+    build:
+      context: ./OrderService/OrderService
+      dockerfile: Dockerfile
+    ports:
+      - "5002:8080"  # Outside 5002 -> Inside 8080
+    container_name: order-api
+    environment:
+      # TRICK: Inside Docker network, we use the container name ("item-api"), not localhost!
+      - ITEM_SERVICE_URL=http://item-api:8080
+    depends_on:
+      - item-service
+      
+  # Robot 3: The Database (SQL Server)
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-server
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=MySuperStrongPassword123!
+    ports:
+      - "1433:1433"
+   
+  # Robot 4: The Sticky Note (Redis)
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+  gateway:
+    image: gateway
+    build:
+      context: ./Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8080" # The Front Door
+    depends_on:
+      - item-service
+      - order-service    
