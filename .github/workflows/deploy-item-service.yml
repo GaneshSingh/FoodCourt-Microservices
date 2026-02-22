@@ -1,0 +1,51 @@
+﻿name: Deploy Item Service
+
+# TRIGGER: When does this assembly line run?
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ItemService/**' # Only run if ItemService code changes!
+  workflow_dispatch: # Adds a button to run it manually from GitHub.com
+
+# VARIABLES: Your specific Azure Mall configuration
+env:
+  ACR_NAME: ganeshfoodcourtmicroservices
+  RESOURCE_GROUP: FoodCourt-RG
+  APP_NAME: item-service-app
+  IMAGE_BASE: ganeshfoodcourtmicroservices.azurecr.io/item-service
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # GitHub gives us a fresh Linux server
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 🔐 Log in to Azure Container Registry
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: 📦 Build and Push Docker Image
+        run: |
+          # Create a dynamic tag using the GitHub run number
+          IMAGE_TAG=${{ env.IMAGE_BASE }}:${{ github.run_number }}
+          
+          # Build the box
+          docker build -t $IMAGE_TAG ./ItemService
+          
+          # Push to the warehouse
+          docker push $IMAGE_TAG
+
+      - name: 🚀 Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.IMAGE_BASE }}:${{ github.run_number }}
