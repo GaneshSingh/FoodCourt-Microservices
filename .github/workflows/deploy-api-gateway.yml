@@ -1,0 +1,31 @@
+name: Deploy API Gateway
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'ApiGateway/**' ]
+  workflow_dispatch:
+
+env:
+  ACR_NAME: ganeshfoodcourtmicroservices
+  RESOURCE_GROUP: FoodCourt-RG
+  APP_NAME: api-gateway-app
+  IMAGE_BASE: ganeshfoodcourtmicroservices.azurecr.io/api-gateway
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: az acr login --name ${{ env.ACR_NAME }}
+      - name: Build and Push
+        run: |
+          IMAGE_TAG=${{ env.IMAGE_BASE }}:${{ github.run_number }}
+          docker build -t $IMAGE_TAG ./ApiGateway
+          docker push $IMAGE_TAG
+      - name: Deploy
+        run: |
+          az containerapp update --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.IMAGE_BASE }}:${{ github.run_number }}
