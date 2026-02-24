@@ -10,10 +10,36 @@
         }
       ],
       "UpstreamPathTemplate": "/api/order",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
     }
   ],
   "GlobalConfiguration": {
     "BaseUrl": "https://api-gateway-app.greenmushroom-b60b9900.centralindia.azurecontainerapps.io"
   }
 }
+
+
+
+//{
+//  "Routes": [
+//    {
+//      "DownstreamPathTemplate": "/order",
+//      "DownstreamScheme": "https",
+//      "DownstreamHostAndPorts": [
+//        {
+//          "Host": "order-service-app.internal.greenmushroom-b60b9900.centralindia.azurecontainerapps.io",
+//          "Port": 443
+//        }
+//      ],
+//      "UpstreamPathTemplate": "/api/order",
+//      "UpstreamHttpMethod": [ "GET", "POST" ]
+//    }
+//  ],
+//  "GlobalConfiguration": {
+//    "BaseUrl": "https://api-gateway-app.greenmushroom-b60b9900.centralindia.azurecontainerapps.io"
+//  }
+//}
