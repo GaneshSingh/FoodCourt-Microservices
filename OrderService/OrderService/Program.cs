@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 // Enterprise Chaos Test: Verifying CI/CD Path Filtering
 
+Console.WriteLine("Food Court Assembly Line is Fully Automated!");
 var builder = WebApplication.CreateBuilder(args);
 
 
