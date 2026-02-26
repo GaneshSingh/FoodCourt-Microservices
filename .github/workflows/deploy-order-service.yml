@@ -29,3 +29,4 @@ jobs:
       - name: Deploy
         run: |
           az containerapp update --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.IMAGE_BASE }}:${{ github.run_number }}
+          --min-replicas 1
